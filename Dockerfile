@@ -24,5 +24,8 @@ EXPOSE 8080
 # Run application as non-root user
 USER app
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Check whether the Spring Boot application is responding
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+    CMD wget -q --spider http://127.0.0.1:8080/ || exit 1
 
+ENTRYPOINT ["java", "-jar", "app.jar"]

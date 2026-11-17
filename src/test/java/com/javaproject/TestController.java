@@ -1,12 +1,14 @@
+
 package com.javaproject;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import java.util.List;
 
@@ -47,7 +49,9 @@ class TestController {
 
     @Test
     public void testAddBoardGame() throws Exception {
-        LinkedMultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
+
+        LinkedMultiValueMap<String, String> requestParams =
+                new LinkedMultiValueMap<>();
 
         requestParams.add("name", "onecard");
         requestParams.add("level", "1");
@@ -56,16 +60,22 @@ class TestController {
         requestParams.add("gameType", "Party Game");
 
         int origSize = da.getBoardGames().size();
-        mockMvc.perform(post("/boardgameAdded").params(requestParams))
+
+        mockMvc.perform(post("/boardgameAdded")
+                .params(requestParams)
+                .with(csrf()))
                 .andExpect(status().isFound())
                 .andExpect(redirectedUrl("/"))
                 .andDo(print());
+
         int newSize = da.getBoardGames().size();
-        assertEquals(newSize, origSize + 1);
+
+        assertEquals(origSize + 1, newSize);
     }
 
     @Test
     public void testEditReview() throws Exception {
+
         List<BoardGame> boardGames = da.getBoardGames();
         Long boardgameId = boardGames.get(0).getId();
 
@@ -75,16 +85,21 @@ class TestController {
 
         review.setText("Edited text");
 
-        mockMvc.perform(post("/reviewAdded").flashAttr("review", review))
+        mockMvc.perform(post("/reviewAdded")
+                .flashAttr("review", review)
+                .with(csrf()))
                 .andExpect(status().isFound())
-                .andExpect(redirectedUrl("/" + review.getGameId() + "/reviews"));
+                .andExpect(redirectedUrl(
+                        "/" + review.getGameId() + "/reviews"));
 
         review = da.getReview(reviewId);
-        assertEquals(review.getText(), "Edited text");
+
+        assertEquals("Edited text", review.getText());
     }
 
     @Test
     public void testDeleteReview() throws Exception {
+
         List<BoardGame> boardGames = da.getBoardGames();
         Long boardgameId = boardGames.get(0).getId();
 
@@ -95,10 +110,11 @@ class TestController {
 
         mockMvc.perform(get("/deleteReview/{id}", reviewId))
                 .andExpect(status().isFound())
-                .andExpect(redirectedUrl("/" + boardgameId + "/reviews"));
+                .andExpect(redirectedUrl(
+                        "/" + boardgameId + "/reviews"));
 
         int newSize = da.getReviews(boardgameId).size();
 
-        assertEquals(newSize, origSize - 1);
+        assertEquals(origSize - 1, newSize);
     }
 }
