@@ -28,7 +28,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: boardgame
-          image: supriya9606/boardgame:13
+          image: supriya9606/boardgame:17
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
