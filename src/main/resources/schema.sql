@@ -36,3 +36,29 @@ values (1, 'Collecting gemstones makes me feel like a wealthy merchant. Highly r
 insert into reviews (gameId, text)
 values (2, 'A detective game to guess the criminal, weapon, and place of the crime scene. It is more fun with more than 3 players.');
 
+
+-- Spring Security user authentication tables
+CREATE TABLE users (
+    username VARCHAR(50) NOT NULL PRIMARY KEY,
+    password VARCHAR(500) NOT NULL,
+    enabled BOOLEAN NOT NULL
+);
+
+CREATE TABLE authorities (
+    username VARCHAR(50) NOT NULL,
+    authority VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_authorities_users
+        FOREIGN KEY (username) REFERENCES users(username)
+);
+
+CREATE UNIQUE INDEX ix_auth_username
+ON authorities (username, authority);
+
+-- Available roles for the user registration page
+CREATE TABLE roles (
+    authority VARCHAR(50) NOT NULL PRIMARY KEY
+);
+
+INSERT INTO roles (authority) VALUES ('ROLE_USER');
+INSERT INTO roles (authority) VALUES ('ROLE_MANAGER');
+
